@@ -1,5 +1,6 @@
 import ComunicacaoTemplate from '#models/comunicacao_template'
 import MailService from '#services/mail_service'
+
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class MailController {
@@ -15,17 +16,10 @@ export default class MailController {
         })
       }
 
-      const subject = comunicacaoTemplate.tag
-        .replace('-', ' ')
-        .toLowerCase()
-        .split(' ')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-
       await MailService.send({
         sender,
         receiver: email,
-        subject,
+        subject: comunicacaoTemplate.descricao,
         htmlTemplate: comunicacaoTemplate.template,
         params: htmlParams,
       })
