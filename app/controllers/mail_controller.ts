@@ -27,7 +27,7 @@ export default class MailController {
       return response.status(200).send(true)
     } catch (error) {
       const { message, cause } = error
-      return response.status(404).send({ message, cause })
+      return response.status(400).send({ message, cause })
     }
   }
 }

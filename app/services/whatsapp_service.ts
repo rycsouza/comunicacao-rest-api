@@ -1,4 +1,5 @@
 import { client, MessageMedia } from '#config/whatsapp'
+import { GroupChat } from 'whatsapp-web.js'
 import { GenerateImage } from '../helpers/index.js'
 import fs from 'node:fs'
 
@@ -11,6 +12,11 @@ interface WhatsappMediaMessageInterface {
   params: { [key: string]: string }
   mensagem: string | undefined
   templateTag: string
+}
+
+interface WhatsappAddParticipants {
+  nomeGrupo: string
+  telefones: string[]
 }
 
 export default class WhatsappService {
@@ -51,6 +57,14 @@ export default class WhatsappService {
       console.log(error)
       return false
     }
+  }
+
+  static async addParticipants({ nomeGrupo, telefones }: WhatsappAddParticipants) {
+    const chats = await client.getChats()
+    const group = chats.find((chat) => group.isGroup && chat.name === nomeGrupo) as GroupChat
+
+    if (!group) throw new Error('Grupo não encontrado')
+    await group.addParticipants(telefones.map((telefone) => this.formatPhoneNumber({ telefone })))
   }
 
   static formatPhoneNumber({ telefone }: { telefone: string }) {

@@ -38,7 +38,7 @@ export default class WhatsappController {
       return response.status(200).send(true)
     } catch (error) {
       const { message, cause } = error
-      return response.status(404).send({ message, cause })
+      return response.status(400).send({ message, cause })
     }
   }
 
@@ -84,7 +84,17 @@ export default class WhatsappController {
       return response.status(200).send(true)
     } catch (error) {
       const { message, cause } = error
-      return response.status(404).send({ message, cause })
+      return response.status(400).send({ message, cause })
+    }
+  }
+
+  async addParticipants({ request, response }: HttpContext) {
+    try {
+      const { nomeGrupo, telefones } = request.all()
+      await WhatsappService.addParticipants({ nomeGrupo, telefones })
+    } catch (error) {
+      const { message, cause } = error
+      return response.status(400).send({ message, cause })
     }
   }
 }

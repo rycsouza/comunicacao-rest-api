@@ -17,5 +17,10 @@ router
   .group(() => {
     router.post('/text', [WhatsappController, 'sendTextMessage'])
     router.post('/media', [WhatsappController, 'sendMediaMessage'])
+    router
+      .group(() => {
+        router.post('/', [WhatsappController, 'addParticipants'])
+      })
+      .prefix('participants')
   })
   .prefix('whatsapp')
