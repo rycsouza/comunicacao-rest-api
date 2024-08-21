@@ -14,7 +14,8 @@ export default ({ htmlTemplate, params }: HTMLFormaterInterface) => {
 
   htmlTemplate = htmlTemplate.replace(/{{\s*([\s\S]+?)\s*}}/g, (_, key) => {
     const evalKey = new Function('params', `with(params) { return ${key} }`)
-    return evalKey(params) || ''
+    const result = evalKey(params)
+    return result && result !== '' ? result : ''
   })
 
   return htmlTemplate
