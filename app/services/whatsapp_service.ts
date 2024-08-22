@@ -71,6 +71,7 @@ export default class WhatsappService {
 
     const telefonesFormatados: string[] = []
     telefones.forEach((telefone) => {
+      if (!telefone) return
       const array = this.formatPhoneNumber({ telefone })
 
       array.forEach((item: string) => telefonesFormatados.push(item))
