@@ -1,7 +1,7 @@
-import { client, MessageMedia } from '#config/whatsapp'
-import { GroupChat } from 'whatsapp-web.js'
 import { GenerateImage } from '../helpers/index.js'
+import { client, MessageMedia } from '#config/whatsapp'
 import fs from 'node:fs'
+import { GroupChat } from 'whatsapp-web.js'
 
 interface WhatsappTextMessageInterface {
   params: { [key: string]: string }
@@ -22,8 +22,10 @@ interface WhatsappAddParticipants {
 export default class WhatsappService {
   static async sendTextMessage({ params, mensagem }: WhatsappTextMessageInterface) {
     try {
-      const telefone = this.formatPhoneNumber({ telefone: params!.telefone })
-      await client.sendMessage(telefone, mensagem)
+      const telefones = this.formatPhoneNumber({ telefone: params!.telefone })
+      telefones.map(async (telefone: string) => {
+        await client.sendMessage(telefone, mensagem)
+      })
 
       return true
     } catch (error) {
@@ -38,8 +40,6 @@ export default class WhatsappService {
     templateTag,
   }: WhatsappMediaMessageInterface) {
     try {
-      const telefone = this.formatPhoneNumber({ telefone: params?.telefone })
-
       const imageGenerated = await GenerateImage({
         params,
         templateTag,
@@ -48,7 +48,11 @@ export default class WhatsappService {
       if (!imageGenerated) throw new Error('Não foi possível gerar a imagem para envio!')
 
       const midia = MessageMedia.fromFilePath(imageGenerated.pathMediaFile)
-      await client.sendMessage(telefone, mensagem, { media: midia })
+
+      const telefones = this.formatPhoneNumber({ telefone: params?.telefone })
+      telefones.map(
+        async (telefone: string) => await client.sendMessage(telefone, mensagem, { media: midia })
+      )
 
       if (fs.existsSync(imageGenerated.pathMediaFile)) fs.unlinkSync(imageGenerated.pathMediaFile) //apagando imagem do projeto, após envio!
 
@@ -61,15 +65,41 @@ export default class WhatsappService {
 
   static async addParticipants({ nomeGrupo, telefones }: WhatsappAddParticipants) {
     const chats = await client.getChats()
-    const group = chats.find((chat) => group.isGroup && chat.name === nomeGrupo) as GroupChat
+    const group = chats.find((chat) => chat.isGroup && chat.name === nomeGrupo) as GroupChat
 
     if (!group) throw new Error('Grupo não encontrado')
-    await group.addParticipants(telefones.map((telefone) => this.formatPhoneNumber({ telefone })))
+
+    const telefonesFormatados: string[] = []
+    telefones.forEach((telefone) => {
+      const array = this.formatPhoneNumber({ telefone })
+
+      array.forEach((item: string) => telefonesFormatados.push(item))
+    })
+
+    await group.addParticipants(telefonesFormatados)
   }
 
   static formatPhoneNumber({ telefone }: { telefone: string }) {
-    return telefone && telefone[0] === '5' && telefone[1] === '5'
-      ? `${telefone}@c.us`
-      : `55${telefone}@c.us`
+    try {
+      if (!telefone) throw new Error('É necessário o telefone para realizar a ação!')
+      telefone = telefone.trim()
+
+      telefone =
+        telefone[0] === '5' && telefone[1] === '5' ? `${telefone}@c.us` : `55${telefone}@c.us`
+
+      const telefones: string[] = []
+      telefones.push(telefone)
+
+      //17 ou 18 por causa do '@c.us'
+      if (telefones[0].length === 17) {
+        telefones.push(`${telefone.slice(0, 4)}9${telefone.slice(4)}`)
+      } else if (telefones[0].length === 18) {
+        telefones.push(`${telefone.slice(0, 4)}${telefone.slice(5)}`)
+      }
+
+      return telefones
+    } catch (error) {
+      throw error
+    }
   }
 }
