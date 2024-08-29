@@ -23,9 +23,11 @@ export default class WhatsappService {
   static async sendTextMessage({ params, mensagem }: WhatsappTextMessageInterface) {
     try {
       const telefones = this.formatPhoneNumber({ telefone: params!.telefone })
-      telefones.map(async (telefone: string) => {
-        await client.sendMessage(telefone, mensagem)
-      })
+      await Promise.all(
+        telefones.map(async (telefone: string) => {
+          await client.sendMessage(telefone, mensagem)
+        })
+      )
 
       return true
     } catch (error) {
