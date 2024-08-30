@@ -2,6 +2,10 @@ import { GenerateImage } from '../helpers/index.js'
 import { client, MessageMedia } from '#config/whatsapp'
 import fs from 'node:fs'
 import { GroupChat } from 'whatsapp-web.js'
+import { Sleep } from '../helpers/index.js'
+import env from '#start/env'
+
+const TIME_TO_SLEEP = env.get('TIME_TO_SLEEP') ? Number.parseInt(env.get('TIME_TO_SLEEP')!) : 10000
 
 interface WhatsappTextMessageInterface {
   params: { [key: string]: string }
@@ -26,6 +30,7 @@ export default class WhatsappService {
       await Promise.all(
         telefones.map(async (telefone: string) => {
           await client.sendMessage(telefone, mensagem)
+          await Sleep(TIME_TO_SLEEP)
         })
       )
 
@@ -52,8 +57,11 @@ export default class WhatsappService {
       const midia = MessageMedia.fromFilePath(imageGenerated.pathMediaFile)
 
       const telefones = this.formatPhoneNumber({ telefone: params?.telefone })
-      telefones.map(
-        async (telefone: string) => await client.sendMessage(telefone, mensagem, { media: midia })
+      await Promise.all(
+        telefones.map(async (telefone: string) => {
+          await client.sendMessage(telefone, mensagem, { media: midia })
+          await Sleep(TIME_TO_SLEEP)
+        })
       )
 
       if (fs.existsSync(imageGenerated.pathMediaFile)) fs.unlinkSync(imageGenerated.pathMediaFile) //apagando imagem do projeto, após envio!
@@ -79,7 +87,7 @@ export default class WhatsappService {
       array.forEach((item: string) => telefonesFormatados.push(item))
     })
 
-    await group.addParticipants(telefonesFormatados)
+    await group.addParticipants(telefonesFormatados, { sleep: TIME_TO_SLEEP / 2 })
   }
 
   static formatPhoneNumber({ telefone }: { telefone: string }) {
