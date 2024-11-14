@@ -1,4 +1,4 @@
-import ComunicacaoTemplate from '#models/comunicacao_template'
+import ComunicacaoConfig from '#models/comunicacao_template'
 import MailService from '#services/mail_service'
 
 import type { HttpContext } from '@adonisjs/core/http'
@@ -8,7 +8,7 @@ export default class MailController {
     try {
       const { email, templateTag, sender, htmlParams } = request.all()
 
-      const comunicacaoTemplate = await ComunicacaoTemplate.findBy({ tag: templateTag })
+      const comunicacaoTemplate = await ComunicacaoConfig.findBy({ tag: templateTag })
 
       if (!comunicacaoTemplate) {
         throw new Error('Template não encontrado!', {

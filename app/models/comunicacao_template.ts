@@ -1,7 +1,7 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 
-export default class ComunicacaoTemplate extends BaseModel {
-  static table = 'comunicacao_template'
+export default class ComunicacaoConfig extends BaseModel {
+  static table = 'comunicacao_config'
 
   @column({ isPrimary: true })
   declare id: number

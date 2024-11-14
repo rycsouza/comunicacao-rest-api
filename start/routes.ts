@@ -17,6 +17,7 @@ router
   .group(() => {
     router.post('/text', [WhatsappController, 'sendTextMessage'])
     router.post('/media', [WhatsappController, 'sendMediaMessage'])
+    router.post('/sendGroupMessage', [WhatsappController, 'sendGroupMessage'])
     router
       .group(() => {
         router.post('/', [WhatsappController, 'addParticipants'])

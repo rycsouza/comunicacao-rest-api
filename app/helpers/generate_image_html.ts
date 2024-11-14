@@ -1,12 +1,12 @@
-import ComunicacaoTemplate from '#models/comunicacao_template'
+import { HTMLFormater } from './index.js'
+import ComunicacaoConfig from '#models/comunicacao_template'
 import env from '#start/env'
 import fs from 'node:fs'
 import puppeteer from 'puppeteer'
-import { HTMLFormater } from './index.js'
 
 interface GenerateImageInterface {
   params: { [key: string]: string }
-  templateTag: string
+  templateTag?: string
 }
 
 const puppeteerConfig =
@@ -20,7 +20,7 @@ const puppeteerConfig =
 
 export default async ({ params, templateTag }: GenerateImageInterface) => {
   try {
-    const comunicacaoTemplate = await ComunicacaoTemplate.findBy({ tag: templateTag })
+    const comunicacaoTemplate = await ComunicacaoConfig.findBy({ tag: templateTag })
 
     if (!comunicacaoTemplate) {
       throw new Error('Template não encontrado!', {
