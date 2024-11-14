@@ -1,9 +1,9 @@
+import { GenerateImageHTML, Sleep } from '../helpers/index.js'
 import { client, MessageMedia } from '#config/whatsapp'
 import env from '#start/env'
 import fs from 'node:fs'
-import { GroupChat } from 'whatsapp-web.js'
-import { GenerateImageHTML, Sleep } from '../helpers/index.js'
 import path from 'path'
+import { GroupChat } from 'whatsapp-web.js'
 
 const TIME_TO_SLEEP = env.get('TIME_TO_SLEEP') ? Number.parseInt(env.get('TIME_TO_SLEEP')!) : 10000
 
@@ -95,9 +95,11 @@ export default class WhatsappService {
         }
 
         // Define um caminho único para a imagem recebida
+        //@ts-ignore
         const tempImagePath = path.join(tempDir, `${Date.now()}_${params.picture.originalname}`)
 
         // Salva o arquivo temporário
+        //@ts-ignore
         fs.writeFileSync(tempImagePath, params.picture.buffer)
 
         // Cria a mídia a partir do caminho temporário
@@ -106,6 +108,8 @@ export default class WhatsappService {
 
       if (midia) {
         await client.sendMessage(chatId, mensagem, { media: midia })
+
+        //@ts-ignore
         fs.unlinkSync(midia.filePath)
       } else await client.sendMessage(chatId, mensagem)
 
