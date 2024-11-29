@@ -9,6 +9,11 @@ const mailConfig = defineConfig({
    * each using a different transport or same transport with different
    * options.
    */
+  from: {
+    name: 'DeTechted',
+    address: env.get('SMTP_USERNAME')!,
+  },
+
   mailers: {
     smtp: transports.smtp({
       host: env.get('SMTP_HOST'),

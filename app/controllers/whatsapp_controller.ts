@@ -36,7 +36,7 @@ export default class WhatsappController {
         )
       }
 
-      return response.status(200).send(true)
+      return response.status(200).send({ success: true })
     } catch (error) {
       const { message, cause } = error
       return response.status(400).send({ message, cause })

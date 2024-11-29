@@ -1,21 +1,25 @@
 import mail from '@adonisjs/mail/services/main'
-import { HTMLFormater } from '../helpers/index.js'
 
 interface MailType {
-  sender: { email: string; name: string }
   receiver: string
   subject: string
   htmlTemplate: string
-  params: object
+  params: {
+    [key: string]: string
+  }
 }
 
 export default class MailService {
-  static async send({ sender, receiver, subject, htmlTemplate, params = {} }: MailType) {
+  static async send({ receiver, subject, htmlTemplate, params }: MailType) {
     try {
-      htmlTemplate = HTMLFormater({ htmlTemplate, params })
+      //@ts-ignore
+      Object.keys(params)?.forEach((key) => {
+        if (htmlTemplate.includes(`{{${key}}}`))
+          htmlTemplate = htmlTemplate.replace(`{{${key}}}`, params[key])
+      })
 
       await mail.send((message) => {
-        message.to(receiver).from(sender.email, sender.name).subject(subject).html(htmlTemplate)
+        message.to(receiver).subject(subject).html(htmlTemplate)
       })
 
       return true

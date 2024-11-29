@@ -27,6 +27,13 @@ export default class WhatsappService {
   static async sendTextMessage({ params, mensagem }: WhatsappTextMessageInterface) {
     try {
       const telefones = this.formatPhoneNumber({ telefone: params!.telefone })
+
+      Object.keys(params.paramsToReplace)?.forEach((key) => {
+        if (mensagem.includes(`{{${key}}}`))
+          //@ts-ignore
+          mensagem = mensagem.replace(`{{${key}}}`, params.paramsToReplace[key])
+      })
+
       await Promise.all(
         telefones.map(async (telefone: string) => {
           await Sleep(TIME_TO_SLEEP)

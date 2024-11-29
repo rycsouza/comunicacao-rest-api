@@ -6,7 +6,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class MailController {
   async sendMail({ request, response }: HttpContext) {
     try {
-      const { email, templateTag, sender, htmlParams } = request.all()
+      const { templateTag, params } = request.all()
 
       const comunicacaoTemplate = await ComunicacaoConfig.findBy({ tag: templateTag })
 
@@ -17,14 +17,13 @@ export default class MailController {
       }
 
       await MailService.send({
-        sender,
-        receiver: email,
+        receiver: params.email,
         subject: comunicacaoTemplate.descricao,
         htmlTemplate: comunicacaoTemplate.template,
-        params: htmlParams,
+        params: params.paramsToReplace,
       })
 
-      return response.status(200).send(true)
+      return response.status(200).send({ success: true })
     } catch (error) {
       const { message, cause } = error
       return response.status(400).send({ message, cause })
