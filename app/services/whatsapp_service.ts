@@ -2,7 +2,6 @@ import { GenerateImageHTML, Sleep } from '../helpers/index.js'
 import { client, MessageMedia } from '#config/whatsapp'
 import env from '#start/env'
 import fs from 'node:fs'
-import path from 'path'
 import { GroupChat } from 'whatsapp-web.js'
 
 const TIME_TO_SLEEP = env.get('TIME_TO_SLEEP') ? Number.parseInt(env.get('TIME_TO_SLEEP')!) : 10000
@@ -82,12 +81,13 @@ export default class WhatsappService {
 
   static async sendGroupMessage({ params, mensagem = '' }: WhatsappMediaMessageInterface) {
     try {
-      const chatId = (await client.getChats()).map((chat) => {
-        if (chat.isGroup && chat.name == params?.groupName) return chat.id._serialized
-      })[0]
+      const group = (await client.getChats()).find(
+        (chat) => chat.name === params.groupName
+      ) as GroupChat
 
-      if (!chatId) throw new Error('Grupo não encontrado')
+      if (!group) throw new Error('Grupo não encontrado')
 
+      if (!params.picture) mensagem = mensagem.replace('{{picture}}', '')
       if (mensagem.includes('{{')) {
         Object.keys(params).forEach((key) => {
           if (mensagem.includes(key)) mensagem = mensagem.replace(`{{${key}}}`, params[key])
@@ -95,30 +95,30 @@ export default class WhatsappService {
       }
 
       let midia = null
-      if (params.picture) {
-        const tempDir = path.join(__dirname, 'temp')
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir)
-        }
+      // if (params.picture) {
+      //   const tempDir = path.join(__dirname, 'temp')
+      //   if (!fs.existsSync(tempDir)) {
+      //     fs.mkdirSync(tempDir)
+      //   }
 
-        // Define um caminho único para a imagem recebida
-        //@ts-ignore
-        const tempImagePath = path.join(tempDir, `${Date.now()}_${params.picture.originalname}`)
+      //   // Define um caminho único para a imagem recebida
+      //   //@ts-ignore
+      //   const tempImagePath = path.join(tempDir, `${Date.now()}_${params.picture.originalname}`)
 
-        // Salva o arquivo temporário
-        //@ts-ignore
-        fs.writeFileSync(tempImagePath, params.picture.buffer)
+      //   // Salva o arquivo temporário
+      //   //@ts-ignore
+      //   fs.writeFileSync(tempImagePath, params.picture.buffer)
 
-        // Cria a mídia a partir do caminho temporário
-        midia = MessageMedia.fromFilePath(tempImagePath)
-      }
+      //   // Cria a mídia a partir do caminho temporário
+      //   midia = MessageMedia.fromFilePath(tempImagePath)
+      // }
 
       if (midia) {
-        await client.sendMessage(chatId, mensagem, { media: midia })
+        await client.sendMessage(group.id._serialized, mensagem, { media: midia })
 
         //@ts-ignore
         fs.unlinkSync(midia.filePath)
-      } else await client.sendMessage(chatId, mensagem)
+      } else await client.sendMessage(group.id._serialized, mensagem)
 
       return true
     } catch (error) {
